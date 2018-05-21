@@ -68,7 +68,7 @@ public class UnityNotificationManager extends BroadcastReceiver
 
     public static void SetNotification(int id, long delayMs, String title, String message, String ticker, int sound, String soundName, int vibrate,
                                        int lights, String largeIconResource, String smallIconResource, int bgColor, String bundle, String channel,
-                                       ArrayList<NotificationAction> actions)
+                                       ArrayList<NotificationAction> actions, NotificationAction mainAction)
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (channel == null)
@@ -94,6 +94,7 @@ public class UnityNotificationManager extends BroadcastReceiver
         intent.putExtra("channel", channel);
         Bundle b = new Bundle();
         b.putParcelableArrayList("actions", actions);
+        b.putParcelable("mainAction", mainAction);
         intent.putExtra("actionsBundle", b);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayMs, PendingIntent.getBroadcast(currentActivity, id, intent, PendingIntent.FLAG_UPDATE_CURRENT));
@@ -102,7 +103,7 @@ public class UnityNotificationManager extends BroadcastReceiver
     }
 
     public static void SetRepeatingNotification(int id, long delayMs, String title, String message, String ticker, long rep, int sound, String soundName, int vibrate, int lights,
-                                                String largeIconResource, String smallIconResource, int bgColor, String bundle, String channel, ArrayList<NotificationAction> actions)
+                                                String largeIconResource, String smallIconResource, int bgColor, String bundle, String channel, ArrayList<NotificationAction> actions, NotificationAction mainAction)
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (channel == null)
@@ -128,6 +129,7 @@ public class UnityNotificationManager extends BroadcastReceiver
         intent.putExtra("channel", channel);
         Bundle b = new Bundle();
         b.putParcelableArrayList("actions", actions);
+        b.putParcelable("mainAction", mainAction);
         intent.putExtra("actionsBundle", b);
         am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delayMs, rep, PendingIntent.getBroadcast(currentActivity, id, intent, 0));
     }
@@ -151,6 +153,7 @@ public class UnityNotificationManager extends BroadcastReceiver
         String channel = intent.getStringExtra("channel");
         Bundle b = intent.getBundleExtra("actionsBundle");
         ArrayList<NotificationAction> actions = b.getParcelableArrayList("actions");
+        NotificationAction mainAction = b.getParcelable("mainAction");
 
         Resources res = context.getResources();
 
@@ -200,6 +203,7 @@ public class UnityNotificationManager extends BroadcastReceiver
         if (lights)
             builder.setLights(Color.GREEN, 3000, 3000);
 
+
         if (actions != null) {
             for (int i = 0; i < actions.size(); i++) {
                 NotificationAction action = actions.get(i);
@@ -209,6 +213,9 @@ public class UnityNotificationManager extends BroadcastReceiver
                 builder.addAction(icon, action.getTitle(), buildActionIntent(action, i));
             }
         }
+
+        if(mainAction != null)
+            builder.setContentIntent(buildActionIntent(mainAction, actions != null ? actions.size() : 0));
 
         Notification notification = builder.build();
         notificationManager.notify(id, notification);

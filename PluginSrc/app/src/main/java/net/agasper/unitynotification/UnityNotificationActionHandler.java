@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.unity3d.player.UnityPlayer;
-import com.unity3d.player.UnityPlayerActivity;
 
 /**
  * Created by gileadis on 11/14/17.
@@ -25,7 +24,7 @@ public class UnityNotificationActionHandler extends BroadcastReceiver {
         notificationManager.cancel(id);
 
         if (foreground) {
-            Intent launchIntent = new Intent(context, UnityPlayerActivity.class);
+            Intent launchIntent = new Intent(context, UnityPlayer.currentActivity.getClass());
             launchIntent.setPackage(null);
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             context.startActivity(launchIntent);
